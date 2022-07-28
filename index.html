@@ -20,7 +20,22 @@
         <div class="cell" id="7"></div>
         <div class="cell" id="8"></div>
     </div>
+    <div class="players">
+        <div class="buttons">
+            <button class="mode selected">CPU</button>
+            <button class="mode">2 Player</button>
+        </div>
+        <div class="player1 player">
+            <p>X</p>
+            <input type="text" placeholder="Name" class="playersInput">
+        </div>
+        <div class="player2 player">
+            <p>O</p>
+            <input type="text" placeholder="Name" class="playersInput off" readonly = true>
+        </div>
+    </div>
     <div class="modalClass modal" id="modal">
+        <p class="modalClass modalText"></p>
         <button class="modalClass modalBtn" id="modalBtn">Restart</button>
     </div>
 </body>
