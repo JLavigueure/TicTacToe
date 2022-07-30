@@ -1,18 +1,3 @@
-// create factory function for players
-    // name?
-    // variable to track score
-    // variable to track players icon
-
-// when CPU is selected, add off class to .playersInput #2
-// save names and state winner is (insert name)
-    // if no name present, state X or O
-
-
-// TO DO 7/28
-// Add AI turns to on click, use if statement to check if on 2 player or not first
-// add AI function to check for wins first, not just any two cells in a line filled with same symbols
-// fix bug: 'AI error. No move made' shows in console sometimes, AI still appears to be working though
-
 let gameboard = {
     board: new Array(9), 
     boardLength: 9,
@@ -60,10 +45,13 @@ let gameboard = {
         // change javascript variable
         if(event.srcElement.innerHTML == 'CPU') {
             gameboard.twoPlayer = false;
-            gameboard.nameInputs[1].classList.add('off'); }
+            gameboard.nameInputs[1].classList.add('off');
+            gameboard.nameInputs[1].value = '';
+            gameboard.nameInputs[1].readOnly = true; }
         else { 
             gameboard.twoPlayer = true;
             gameboard.nameInputs[1].classList.remove('off'); 
+            gameboard.nameInputs[1].readOnly = false;
         }
     },
 
@@ -100,6 +88,10 @@ let gameboard = {
                 gameboard.resetDOM();
                 gameboard.render();
                 gameboard.checkWinner();
+                if(gameboard.turn == 'o' && gameboard.twoPlayer == false){
+                    AI.takeTurn();
+                    gameboard.turn = 'x';
+            }
             });
         }
         // modal listeners
@@ -117,28 +109,24 @@ let gameboard = {
         // check 3x verticals
         for(let i = 0; i < 4; i++){
             if(gameboard.board[i] == gameboard.board[(i+3)] && gameboard.board[i] == gameboard.board[(i+6)] && gameboard.board[i]) {
-                gameboard.openModal();
-                gameboard.modalElements[1].innerHTML = `The winner is ${gameboard.board[i]}`;
+                gameboard.displayWinner(gameboard.board[i]);
                 return gameboard.board[i];
             } 
         }
         //check 3x horizontals
         for(let i = 0; i <= 6; i += 3){
             if(gameboard.board[i] == gameboard.board[(i+1)] && gameboard.board[i] == gameboard.board[(i+2)] && gameboard.board[i]){
-                gameboard.openModal();
-                gameboard.modalElements[1].innerHTML = `The winner is ${gameboard.board[i]}`;
+                gameboard.displayWinner(gameboard.board[i]);
                 return gameboard.board[i];
             }
         }
         //check 2x diagnols
         if(gameboard.board[0] == gameboard.board[4] && gameboard.board[0] == gameboard.board[8] && gameboard.board[0]){
-            gameboard.openModal();
-            gameboard.modalElements[1].innerHTML = `The winner is ${gameboard.board[0]}`;
+            gameboard.displayWinner(gameboard.board[0]);
             return gameboard.board[0];
         }
         if(gameboard.board[2] == gameboard.board[4] && gameboard.board[2] == gameboard.board[6] && gameboard.board[2]){
-            gameboard.openModal();
-            gameboard.modalElements[1].innerHTML = `The winner is ${gameboard.board[2]}`;
+            gameboard.displayWinner(gameboard.board[2]);
             return gameboard.board[2];
         }
         //check board array is not full 
@@ -147,8 +135,7 @@ let gameboard = {
                 return;
             }
         }
-        gameboard.openModal();
-        gameboard.modalElements[1].innerHTML = `It's a draw!`;
+        gameboard.displayWinner('draw');
         return 'draw';
     },
     resetDOM: function() {
@@ -179,8 +166,41 @@ let gameboard = {
         gameboard.turn = 'x';
         gameboard.closeModal();
     },
+    displayWinner: function(i) {
+        this.openModal();
+        // check if draw
+        if(i == 'draw'){
+            gameboard.modalElements[1].innerHTML = `It's a draw!`;
+            return;
+        }
+        // check if cpu won
+        if(this.twoPlayer != true && i == 'o'){
+            gameboard.modalElements[1].innerHTML = `The winner is CPU`;
+            return;
+        }
+        let nameInputs = [];
+        nameInputs = this.cacheNames();
+        // if x won, display name. If no name, display x
+        if(i == 'x'){
+            if(nameInputs[0].value != ''){
+                gameboard.modalElements[1].innerHTML = `The winner is ${nameInputs[0].value}`;
+                return;
+            }
+            gameboard.modalElements[1].innerHTML = `The winner is ${i}`;
+            return;
+        }
+        // if o won, display name. If no name, display x
+        if(i == 'o'){
+            if(nameInputs[1].value != ''){
+                gameboard.modalElements[1].innerHTML = `The winner is ${nameInputs[1].value}`;
+                return;
+            }
+            gameboard.modalElements[1].innerHTML = `The winner is ${i}`;
+            return;
+        }
+        return 1;
+    },
 }
-
 let AI = {
     firstMove: function() {
         // if center is played
@@ -333,16 +353,19 @@ let AI = {
             if(cellsFilled > 1){break}
         }
         if(cellsFilled == 1){
-            console.log('first move made');
             AI.firstMove();
             return;
         }
-        if(this.checkWinRows() == 1){console.log('Row'); return;}
-        if(this.checkWinColumns() == 1){console.log('Column'); return;}
-        if(this.checkWinDiagnols() == 1){console.log('Diagnol'); return;}
-        if(this.randomMove() == 1){console.log('Random'); return;}
-        console.log('AI Error. No move made');
+        if(this.checkWinRows() == 1){return;}
+        if(this.checkWinColumns() == 1){return;}
+        if(this.checkWinDiagnols() == 1){return;}
+        // check to see if all cells filled, if not random move
+        cellsFilled = 0;
+        for(let i = 0; i < gameboard.board.length; i++){
+            if(gameboard.board[i]){cellsFilled++}
+            if(cellsFilled == 9) {return;}
+        }
+        if(this.randomMove() == 1){return;}
     }
 }
-
 gameboard.init();
